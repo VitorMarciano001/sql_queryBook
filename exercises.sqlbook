@@ -1,0 +1,77 @@
+-- SQLBook: Markup
+1) Selecione o nome do cliente e o nome de seu representante
+-- SQLBook: Code
+SELECT  c.id, c.nome, r.id, r.nome
+FROM cliente c, representante r 
+WHERE r.id = c.idrepresentante;
+-- SQLBook: Markup
+2) Selecione todas as informações da ultima venda
+-- SQLBook: Code
+SELECT *  FROM venda where id = (SELECT MAX(id) FROM venda) 
+-- SQLBook: Markup
+3) selecione as vendas com data de emissao menor que a maior data de emissao
+-- SQLBook: Code
+SELECT * FROM venda WHERE datemissao < '2019-03-15';
+-- SQLBook: Markup
+4) selecione o id, nome e telefone do cliente com a venda mais antiga
+-- SQLBook: Code
+SELECT c.id, c.nome, c.telefone
+FROM cliente c
+WHERE c.id = (
+    SELECT v.idcliente
+    FROM venda v, cliente c
+    WHERE v.idcliente = c.id
+    ORDER BY v.datemissao ASC LIMIT 1
+)
+-- SQLBook: Markup
+5) selecione o id, data de emissão e o total(valor) de cada venda
+-- SQLBook: Code
+SELECT v.id, v.datemissao, SUM(i.quantidade * i.precounitario) AS total
+FROM venda v
+INNER JOIN itemvenda i ON i.idvenda = v.id
+GROUP BY v.id
+-- SQLBook: Markup
+6) selecione todos os produtos que ainda não foram vendidos
+      NOT IN (Select ....)
+-- SQLBook: Code
+SELECT p.id, p.descricao, p.precodecompra, p.precodevenda
+FROM produto p
+WHERE p.id NOT IN (
+    SELECT idproduto
+    FROM itemvenda
+)
+-- SQLBook: Markup
+7) selecione todos os produtos que foram vendidos
+      IN (Select ...)
+-- SQLBook: Code
+SELECT p.id, p.descricao, p.precodecompra, p.precodevenda
+FROM produto p
+WHERE p.id IN (
+    SELECT idproduto
+    FROM itemvenda
+)
+-- SQLBook: Markup
+8) selecione a quantidade de vendas por cliente
+-- SQLBook: Code
+SELECT v.idcliente, c.nome, COUNT(v.id) AS total_vendas
+FROM venda v
+INNER JOIN cliente c ON c.id = v.idcliente
+GROUP BY v.idcliente
+-- SQLBook: Markup
+9) selecione a quantidade de vendas por forma de pagamento
+-- SQLBook: Code
+SELECT v.idformapagto, COUNT(v.id) total_venda
+FROM venda v
+GROUP BY v.idformapagto
+-- SQLBook: Markup
+10) Selecione o id, idformapagto da venda e a descricao da forma 
+   de pagamento de todos as vendas realizadas entre 01/01/2019 
+   e 30/06/2019
+-- SQLBook: Code
+SELECT v.id, v.idformapagto, (
+    SELECT  f.descricao
+    FROM formapagto f
+    WHERE v.idformapagto = f.id
+) AS forma_pgto
+FROM venda v
+ORDER BY v.id ASC

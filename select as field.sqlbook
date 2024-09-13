@@ -1,0 +1,82 @@
+-- SQLBook: Markup
+Sub consulta
+-- SQLBook: Code
+SELECT c.nome, (
+    SELECT COUNT(*)
+    FROM venda v
+    WHERE v.idcliente = c.id
+) AS Compras
+FROM cliente c
+-- SQLBook: Code
+SELECT v.id, v.idcliente, f.descricao, (
+    SELECT COUNT(v2.id)
+    FROM venda v2
+    WHERE v2.idformapagto = v.idformapagto
+) as total
+FROM venda v, formapagto f
+WHERE v.idformapagto = f.id
+GROUP BY 1, 2, 3;
+-- SQLBook: Code
+SELECT f.descricao, (
+    SELECT COUNT(*)
+    FROM venda v
+    WHERE v.idformapagto = f.id
+)
+FROM formapagto f
+-- SQLBook: Code
+SELECT f.descricao
+FROM formapagto f
+WHERE f.id = (
+    SELECT v.idformapagto
+    FROM venda v, formapagto f2
+    WHERE f2.id = v.idformapagto
+    ORDER BY 1 DESC LIMIT 1
+)
+
+-- SQLBook: Markup
+nova tabela
+-- SQLBook: Code
+CREATE TABLE vendaparcela(
+id INTEGER NOT NULL AUTO_INCREMENT,
+idvenda INTEGER NOT NULL,
+dataemissao DATE not null,
+datapagto DATE,
+valorparcela NUMERIC(10,2),
+valorpago NUMERIC(10,2),
+PRIMARY KEY(id),
+FOREIGN KEY (idvenda) REFERENCES venda(id)
+)
+-- SQLBook: Markup
+inserindo dados
+-- SQLBook: Code
+INSERT INTO vendaparcela 
+VALUES(NULL,1, '2019-01-05',null,100, null);
+INSERT INTO vendaparcela 
+VALUES(NULL,1, '2019-01-05',null,100, null);
+INSERT INTO vendaparcela 
+VALUES(NULL,1, '2019-01-05',null,100, null);
+ 
+ 
+INSERT INTO vendaparcela 
+VALUES(NULL,2, '2019-01-06',null,500, null);
+INSERT INTO vendaparcela 
+VALUES(NULL,2, '2019-01-06','2024-09-10',500, 500)
+-- SQLBook: Code
+SELECT v.id, (
+    SELECT count(*)
+    FROM vendaparcela vp
+    WHERE vp.idvenda = v.id
+    AND vp.datapagto IS NULL
+) AS parcelas_abertas,
+(
+    SELECT SUM(vp.valorparcela)
+    FROM vendaparcela vp
+    WHERE vp.idvenda = v.id
+    AND vp.datapagto is NULL
+) as valor_em_aberto
+FROM venda v
+WHERE EXISTS (
+    SELECT vp.idvenda
+    FROM vendaparcela vp
+    WHERE vp.idvenda = v.id
+)
